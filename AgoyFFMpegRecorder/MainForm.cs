@@ -59,12 +59,17 @@ namespace AgoyFFMpegRecorder
             string appConfigFile = Path.Combine(curDir, "AppConfig.xml");
             if (!File.Exists(appConfigFile))
             {
-                logger.Error($"Can't find App config file: {appConfigFile}");
-                MessageBox.Show($"Can't find config file: {appConfigFile}", "Error");
-                return;
+                string msg = $"Can't find App config file: {appConfigFile} - Probably first time App is launched.{Environment.NewLine}Will map available video and audio sources and will select 1st one. If you want to select different Audio/Video source - do so in Video/Audio menu"; 
+                logger.Warn(msg);
+                MessageBox.Show(msg, "First time launch");
+                config = new AppConfig();
             }
-            logger.Debug($"AppConfig file found.");
-            config = SerializerHelper.DeserializeFromXmlFile<AppConfig>(appConfigFile);
+            else
+            {
+                logger.Debug($"AppConfig file found.");
+                config = SerializerHelper.DeserializeFromXmlFile<AppConfig>(appConfigFile);
+
+            }
             ffMpegHelper = new FFMpegHelper(config.FFMpegPath);
             recorder = new BackgroundRecorder2(ffMpegHelper, config, stopRecCallback, recTimeChangedCallback);
             (List<string> videoSourcesNames, List<string> audioSourcesNames) = ffMpegHelper.GetAvailableSources();
